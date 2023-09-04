@@ -37,7 +37,7 @@ library("TSA")
 ```{r}
 #install.packages("rio") #install jika belum ada
 library(rio)
-data <- read.csv("/Users/ignaciatarigan/Downloads/data ignes.csv", sep = ";")
+data <- import("https://raw.githubusercontent.com/ignaciatarigan/mpdwt/main/data%20ignes.csv")
 View(data)
 ```
 
