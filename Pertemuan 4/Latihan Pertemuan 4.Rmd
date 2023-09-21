@@ -73,8 +73,6 @@ pacf(ma)
 TSA::eacf(ma)
 ```
 
-Berdasarkan pola segitiga nol pada plot EACF, terlihat bahwa segitiga nol berada pada ordo AR(0) dan ordo MA(1)
-
 # Scatterplot Antar Lag
 # Korelasi antara $Y_t$ dengan $Y_{t-1}$
 
