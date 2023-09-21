@@ -59,7 +59,7 @@ Berdasarkan plot time series diatas terlihat bahwa data MA(2) yang dibangkitkan 
 ```{r}
 acf(ma,lag.max = 25)
 ```
-Berdasarkan plot AFC diatas terlihat terlihat bahwa plot ACF tersebut cuts off di lag 1, 2, 3, 12, dan 21.
+Berdasarkan plot ACF diatas terlihat terlihat bahwa plot ACF tersebut cuts off di lag 1, 2, 3, 12, dan 21.
 
 # Plot PACF
 
