@@ -17,6 +17,11 @@ par(mfrow = c(1, 2))
 acf(wn)
 acf(wn, xlim = c(1, 20))
 ```
+Bentuk loop dapat dilihat dari rumus MA(2) yang hendak dibangkitkan:
+
+$$
+y_t = e_t+0.4e_{t-1}+0.6e_{t-2}
+$$
 
 # Proses MA
 # Pembangkitan Proses MA(2)
@@ -26,12 +31,6 @@ set.seed(1072)
 ma <- wn[1]
 ma[2] <- wn[2]
 ```
-
-Bentuk loop dapat dilihat dari rumus MA(2) yang hendak dibangkitkan:
-
-$$
-y_t = e_t+0.4e_{t-1}+0.6e_{t-2}
-$$
 
 ```{r}
 for(i in 3:300){
@@ -53,12 +52,14 @@ ma2
 ```{r}
 ts.plot(ma)
 ```
+Berdasarkan plot time series diatas terlihat bahwa data MA(2) yang dibangkitkan stasioner dalam rataan
 
 # Plot ACF
 
 ```{r}
 acf(ma,lag.max = 25)
 ```
+Berdasarkan plot AFC diatas terlihat terlihat bahwa plot ACF tersebut cuts off di lag 1, 2, 3, 12, dan 21.
 
 # Plot PACF
 
@@ -159,6 +160,7 @@ ar2
 ```{r}
 ts.plot(ar)
 ```
+Berdasarkan plot time series tersebut terlihat bahwa data cenderung stasioner pada rataan
 
 # Plot ACF
 
