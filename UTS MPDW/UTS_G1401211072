@@ -25,7 +25,10 @@ library(ggplot2)
 library(tsibble)
 library(tseries)
 library(MASS)
+
 #Angka tambahan (873) telah ditambahkan melalui excel
+library(rio)
+data <- import("https://raw.githubusercontent.com/ignaciatarigan/MPDW/main/Pertemuan%202/fossil%20fuel%20canada.csv")
 View(UTS_MPDW)
 data.ts <- ts(UTS_MPDW$Data)
 data.ts
