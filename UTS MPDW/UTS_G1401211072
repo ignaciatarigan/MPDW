@@ -1,0 +1,172 @@
+---
+title: "UTS MPDW - G1401211072"
+author: "Ignacia Manuela Bregina"
+date: "2023-10-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Masukkan data
+```{r}
+#Input library
+install.packages("dLagM")
+install.packages("tsibble")
+install.packages("dynlm") 
+install.packages("MLmetrics") 
+library(dLagM)
+library(dynlm)
+library(MLmetrics)
+library(lmtest)
+library(car)
+library(ggplot2)
+library(tsibble)
+library(tseries)
+library(MASS)
+#Angka tambahan (873) telah ditambahkan melalui excel
+View(UTS_MPDW)
+data.ts <- ts(UTS_MPDW$Data)
+data.ts
+```
+
+```{r}
+#Membuat plot time series
+ts.plot(data.ts, xlab="Time Period ", ylab="Data Harga Jual Gas Bumi", main= "Time Series Plot of Harga Jual Gas Bumi")
+points(data.ts)
+```
+
+## Pembagian Data
+
+```{r}
+#SPLIT DATA
+train<-UTS_MPDW[1:50,]
+test<-UTS_MPDW[51:151,]
+```
+
+```{r}
+#data time series
+train.ts<-ts(train)
+test.ts<-ts(test)
+```
+
+## Pemodelan
+.
+```{r}
+#MODEL KOYCK
+model.koyck <- koyckDlm(x = UTS_MPDW$Periode, y = UTS_MPDW$Data)
+summary(model.koyck)
+AIC(model.koyck)
+BIC(model.koyck)
+```
+
+Adapun model keseluruhannya adalah sebagai berikut
+
+$$
+\hat{Y_t}=680.96765+-1.92083X_t+0.85863Y_1
+$$
+
+```{r}
+#Pemodelan with Distributed Lag (Lag=2)
+model.dlm <- dlm(x = UTS_MPDW$Periode, y = UTS_MPDW$Data, q = 2)
+summary(model.dlm)
+AIC(model.dlm)
+BIC(model.dlm)
+```
+
+Adapun model keseluruhan yang terbentuk adalah sebagai berikut
+
+$$
+\hat{Y_t}=4890.9353+-13.4841X_t
+$$
+
+```{r}
+#Pemodelan lag optimum 
+finiteDLMauto(formula = Data ~ Periode,
+              data = data.frame(UTS_MPDW), q.min = 1, q.max = 6,
+              model.type = "dlm", error.type = "AIC", trace = FALSE)
+```
+
+Berdasarkan output tersebut, lag optimum didapatkan ketika lag=6. Selanjutnya dilakukan pemodelan untuk lag=6
+
+```{r}
+#model dlm dengan lag optimum
+model.dlm2 <- dlm(x = UTS_MPDW$Periode, y = UTS_MPDW$Data , q = 6)
+summary(model.dlm2)
+AIC(model.dlm2)
+BIC(model.dlm2)
+```
+
+Adapun keseluruhan model yang terbentuk adalah
+
+$$
+\hat{Y_t}=4906.4059+-13.6350X_t
+$$
+
+```{r}
+model.ardl <- ardlDlm(x = UTS_MPDW$Periode, y = UTS_MPDW$Data, p = 1 , q = 1)
+summary(model.ardl)
+AIC(model.ardl)
+BIC(model.ardl)
+```
+
+Model keseluruhannya adalah sebagai berikut:
+
+$$
+\hat{Y}=680.96765-1.92083X_t+0.85863Y_{t-1}
+$$
+
+### Peramalan dan Akurasi
+
+```{r}
+fore.ardl <- forecast(model = model.ardl, x=UTS_MPDW$Periode, h=101)
+fore.ardl
+```
+
+#Penanganan
+```{r}
+plot_stas <- data.ts |> as_tsibble() |> 
+  ggplot(aes(x = index, y = value)) + geom_line() + theme_bw() +
+  xlab("Obs") + ylab("Nilai")
+plot_stas
+mean(data.ts)
+```
+
+### Plot ACF
+
+```{r}
+acf(data.ts)
+```
+
+Berdasarkan plot ACF, terlihat bahwa plot ACF pada data tersebut  *cuts off* dan tidak membentuk gelombang sinus.
+
+### Uji ADF
+
+```{r}
+tseries::adf.test(data.ts)
+```
+
+$H_0$ : Data tidak stasioner dalam rataan
+
+$H_1$ : Data stasioner dalam rataan
+
+Berdasarkan uji ADF tersebut, didapat *p-value* sebesar 0.09 yang lebih besar dari taraf nyata 5% sehingga tolak $H_0$ dan menandakan bahwa data tidak stasioner dalam rataan. 
+
+```{r}
+notrend <- 1 + cumsum(rep(0, 100)) + rnorm(100) |> ts()
+postrend <- 1 + cumsum(rep(0.2, 100)) + rnorm(100) |> ts() 
+negtrend <- 1 + cumsum(rep(-0.2, 100)) + rnorm(100) |> ts()
+```
+
+```{r}
+plot_notrend <- notrend |> as_tsibble() |> 
+  ggplot(aes(x = index, y = value)) + geom_line() + theme_bw() +
+  xlab("Obs") + ylab("Nilai") + ggtitle("First Difference = 0")
+plot_postrend <- postrend |> as_tsibble() |> 
+  ggplot(aes(x = index, y = value)) + geom_line() + theme_bw() +
+  xlab("Obs") + ylab("Nilai") + ggtitle("First Difference = 0.2")
+plot_negtrend <- negtrend |> as_tsibble() |> 
+  ggplot(aes(x = index, y = value)) + geom_line() + theme_bw() +
+  xlab("Obs") + ylab("Nilai") + ggtitle("First Difference = -0.2")
+
